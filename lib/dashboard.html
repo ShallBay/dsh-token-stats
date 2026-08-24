@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepSeek Harness · Token 用量统计</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --panel: rgba(21, 28, 47, .86);
+    --panel2: rgba(29, 38, 61, .72);
+    --border: rgba(148, 163, 184, .13);
+    --border-strong: rgba(148, 163, 184, .24);
+    --text: #e8eefb;
+    --muted: #93a0bd;
+    --faint: #64708f;
+    --blue: #4f8cff;
+    --blue2: #7c5cff;
+    --cyan: #38d9f5;
+    --green: #34d399;
+    --orange: #fbbf24;
+    --amber: #f59e0b;
+    --red: #fb7185;
+    --grad: linear-gradient(135deg, #4f8cff, #7c5cff 55%, #c26bff);
+    --radius: 16px;
+    --radius-s: 10px;
+    --shadow: 0 10px 34px rgba(2, 6, 18, .45);
+    --glow-blue: rgba(79, 140, 255, .16);
+    --mono: "Cascadia Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scrollbar-color: #2c3a5e transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    line-height: 1.55;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* decorative background glows */
+  .bgfx { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  .bgfx::before, .bgfx::after {
+    content: ""; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5;
+  }
+  .bgfx::before { width: 620px; height: 620px; left: -180px; top: -220px; background: radial-gradient(circle, rgba(79,140,255,.30), transparent 65%); }
+  .bgfx::after { width: 560px; height: 560px; right: -160px; bottom: -220px; background: radial-gradient(circle, rgba(124,92,255,.24), transparent 65%); }
+  .bgfx .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(148,163,184,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148,163,184,.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
+  }
+
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 30px 22px 60px; }
+
+  /* ---------- header ---------- */
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+  .h-left .kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint);
+    margin-bottom: 8px;
+  }
+  .h-left .kicker::before { content: ""; width: 18px; height: 2px; border-radius: 2px; background: var(--grad); }
+  h1 { font-size: 27px; font-weight: 750; letter-spacing: .01em; line-height: 1.15; }
+  h1 .acc { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .metaLine { margin-top: 7px; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 999px;
+    padding: 3px 11px; font-size: 11.5px; color: var(--muted); white-space: nowrap;
+  }
+  .chip b { color: var(--text); font-weight: 600; }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .chip .dot.pulse { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, .45); } 50% { box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); } }
+
+  /* ---------- generic cards ---------- */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+    animation: rise .55s cubic-bezier(.2,.7,.3,1) both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .card-title { display: flex; align-items: center; gap: 9px; font-size: 14.5px; font-weight: 650; color: var(--text); margin-bottom: 16px; }
+  .card-title .bar { width: 4px; height: 15px; border-radius: 3px; background: var(--grad); }
+  .card-title .sub { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 2px; }
+  .card-title .spacer { flex: 1; }
+
+  /* ---------- controls ---------- */
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pill-group { display: inline-flex; gap: 4px; background: rgba(10,14,26,.55); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
+  label.pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 15px; border-radius: 999px; cursor: pointer; font-size: 13.5px;
+    color: var(--muted); user-select: none; transition: all .18s ease; white-space: nowrap;
+  }
+  label.pill:hover { color: var(--text); }
+  label.pill input { display: none; }
+  label.pill.active {
+    background: var(--grad); color: #fff; font-weight: 600;
+    box-shadow: 0 4px 16px rgba(101, 116, 255, .45);
+  }
+  .controls input[type="date"] {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 7px 10px; font-size: 13px; outline: none;
+  }
+  .controls input[type="date"]:focus { border-color: var(--blue); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 16px; cursor: pointer; font-size: 13.5px;
+    transition: all .18s ease;
+  }
+  .btn:hover { border-color: var(--blue); box-shadow: 0 0 0 3px var(--glow-blue); }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.spinning svg { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- stat grid ---------- */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .stat {
+    position: relative; overflow: hidden;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 15px 13px; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .stat:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 12px 28px rgba(2,6,18,.5); }
+  .stat .ic {
+    width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px; color: #fff;
+  }
+  .stat .ic svg { width: 16px; height: 16px; }
+  .stat .k { font-size: 11.5px; color: var(--muted); margin-bottom: 5px; line-height: 1.35; }
+  .stat .v { font-size: 21px; font-weight: 750; letter-spacing: .01em; font-variant-numeric: tabular-nums; }
+  .stat .v.small { font-size: 16.5px; }
+  .stat .extra { font-size: 10.5px; color: var(--faint); margin-top: 4px; line-height: 1.45; }
+  .stat.hero {
+    background: linear-gradient(150deg, rgba(64,104,255,.22), rgba(124,92,255,.10) 60%, rgba(21,28,47,.4));
+    border-color: rgba(124,140,255,.4);
+    box-shadow: 0 0 34px rgba(88,110,255,.16), var(--shadow);
+  }
+  .stat.hero .k { color: #a9b9ff; }
+  .stat.hero .v { color: #fff; font-size: 24px; }
+  .stat.hero .ic { background: var(--grad); box-shadow: 0 4px 14px rgba(101,116,255,.5); }
+  .stat.cost {
+    background: linear-gradient(150deg, rgba(52,211,153,.16), rgba(21,28,47,.4));
+    border-color: rgba(52,211,153,.32);
+  }
+  .stat.cost .k { color: #8fe8c4; }
+  .stat.cost .v { color: var(--green); }
+  .stat.cost .ic { background: linear-gradient(135deg, #10b981, #34d399); box-shadow: 0 4px 14px rgba(52,211,153,.4); }
+  .stat .ic.c-blue { background: linear-gradient(135deg, #2f6fe4, #4f8cff); }
+  .stat .ic.c-violet { background: linear-gradient(135deg, #5b4bd6, #7c5cff); }
+  .stat .ic.c-amber { background: linear-gradient(135deg, #d97706, #f59e0b); }
+  .stat .ic.c-cyan { background: linear-gradient(135deg, #0e9fc0, #38d9f5); }
+  .stat .ic.c-slate { background: linear-gradient(135deg, #475569, #64748b); }
+  .stat .ic.c-red { background: linear-gradient(135deg, #e11d48, #fb7185); }
+
+  .grand-row {
+    margin-top: 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: linear-gradient(90deg, rgba(79,140,255,.10), rgba(124,92,255,.06));
+    border: 1px dashed var(--border-strong); border-radius: 12px; padding: 12px 16px;
+  }
+  .grand-row .k { font-size: 12px; color: var(--muted); }
+  .grand-row .vv { font-size: 19px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .grand-row .sep { width: 1px; height: 30px; background: var(--border-strong); }
+
+  /* ---------- cache hit rate bar ---------- */
+  .cachebar {
+    margin-top: 12px; padding: 12px 16px 13px;
+    background: rgba(10, 14, 26, .35);
+    border: 1px solid var(--border); border-radius: 12px;
+  }
+  .cachebar .cb-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+  .cachebar .cb-label { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; }
+  .cachebar .cb-label .sw { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .cachebar .cb-pct { font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--green); }
+  .cachebar .cb-track {
+    height: 8px; border-radius: 999px; overflow: hidden;
+    background: rgba(148, 163, 184, .14);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35);
+  }
+  .cachebar .cb-fill {
+    height: 100%; width: 0%; border-radius: 999px;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    box-shadow: 0 0 10px rgba(52, 211, 153, .45);
+    transition: width .8s cubic-bezier(.2, .7, .3, 1);
+  }
+  .cachebar .cb-sub { margin-top: 7px; font-size: 11.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+  /* ---------- chart ---------- */
+  #chartBox { position: relative; }
+  canvas { width: 100%; height: 330px; display: block; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .legend .lg { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .legend .sw.grad-in { background: linear-gradient(180deg, #6fa1ff, #3a6fe8); }
+  .legend .sw.grad-out { background: linear-gradient(180deg, #ffd07a, #f59e0b); }
+  .legend .sw.peak { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  #tooltip {
+    position: fixed; z-index: 20; pointer-events: none; display: none;
+    background: rgba(10, 15, 28, .92);
+    border: 1px solid var(--border-strong); border-radius: 12px;
+    padding: 10px 12px; font-size: 12px; line-height: 1.7;
+    box-shadow: 0 14px 40px rgba(0,0,0,.6);
+    backdrop-filter: blur(12px);
+    max-width: 300px;
+  }
+  #tooltip .tt-title { font-weight: 700; margin-bottom: 5px; color: #fff; display: flex; align-items: center; gap: 7px; }
+  #tooltip .tt-row { display: flex; justify-content: space-between; gap: 18px; }
+  #tooltip .tt-row.sub .c { color: var(--faint); padding-left: 16px; }
+  #tooltip .tt-row .c { color: var(--muted); white-space: nowrap; }
+  #tooltip .tt-row .c.b { color: var(--text); font-weight: 650; font-variant-numeric: tabular-nums; }
+  #tooltip .tt-row .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 5px; }
+
+  /* ---------- table ---------- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: rgba(10,14,26,.4); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+  thead th {
+    text-align: right; padding: 10px 14px; white-space: nowrap;
+    font-size: 11.5px; font-weight: 600; color: var(--muted);
+    background: rgba(37, 48, 78, .5);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 1;
+  }
+  thead th:first-child, tbody td:first-child, tfoot td:first-child { text-align: left; }
+  tbody td { text-align: right; padding: 9px 14px; border-bottom: 1px solid rgba(148,163,184,.07); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  tbody tr { transition: background .15s ease; }
+  tbody tr:hover { background: rgba(79,140,255,.07); }
+  tbody tr:last-child td { border-bottom: none; }
+  .t-title { max-width: 250px; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text); }
+  .t-id { color: var(--faint); font-size: 10.5px; font-family: var(--mono); }
+  .t-cwd { color: var(--muted); font-size: 11px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
+  tfoot td {
+    border-top: 1px solid var(--border-strong); font-weight: 750; padding: 11px 14px;
+    background: linear-gradient(90deg, rgba(79,140,255,.10), rgba(124,92,255,.05));
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .sess-av {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px; margin-right: 9px;
+    font-size: 11px; font-weight: 700; color: #fff; vertical-align: middle;
+    background: linear-gradient(135deg, #2f6fe4, #7c5cff);
+  }
+  .sess-cell { display: flex; align-items: center; }
+
+  /* ---------- load card ---------- */
+  #dropzone {
+    border: 2px dashed var(--border-strong); border-radius: 14px; padding: 34px 20px;
+    text-align: center; color: var(--muted); cursor: pointer; transition: all .2s ease;
+  }
+  #dropzone:hover { border-color: var(--blue); color: var(--text); background: rgba(79,140,255,.05); }
+  #dropzone .dz-ic { margin-bottom: 10px; }
+  #dropzone .dz-ic svg { width: 34px; height: 34px; stroke: var(--blue); }
+  .hidden { display: none !important; }
+
+  ::selection { background: rgba(79,140,255,.35); }
+  @media (max-width: 640px) {
+    .wrap { padding: 20px 14px 40px; }
+    h1 { font-size: 22px; }
+  }
+  @media (max-width: 980px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .stats { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="bgfx"><div class="grid"></div></div>
+
+<div class="wrap">
+  <header>
+    <div class="h-left">
+      <div class="kicker">DeepSeek Harness · 统计面板</div>
+      <h1>Token 用量<span class="acc">统计</span></h1>
+      <div class="metaLine" id="metaLine">数据未加载</div>
+    </div>
+  </header>
+
+  <div id="loadCard" class="card hidden">
+    <div class="card-title"><span class="bar"></span>加载数据</div>
+    <div id="dropzone" tabindex="0">
+      <div class="dz-ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      点击选择 <code>token-usage.json</code>，或将文件拖到此处<br>
+      <span class="chip" style="margin-top:10px">若页面由 HTTP 服务打开，将自动加载同目录的 token-usage.json</span>
+    </div>
+    <input type="file" id="fileInput" accept=".json,application/json" class="hidden">
+    <p style="font-size:12px;color:var(--faint);margin-top:12px">数据由 <code>collect-tokens.mjs</code> 生成：<code>node collect-tokens.mjs</code></p>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="card" style="animation-delay:.05s">
+      <div class="card-title"><span class="bar"></span>统计范围<span class="sub">高峰时段：01:00–04:00、06:00–10:00 UTC</span><span class="spacer"></span>
+        <span class="chip" id="autoChip" title="每 60 秒自动重新采集并刷新数据（后台标签页暂停）"><span class="dot pulse"></span>每 60 秒自动刷新 · 上次 <span id="lastAuto">—</span></span>
+        <button class="btn" id="reloadBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span id="reloadLabel">刷新</span>
+        </button>
+      </div>
+      <div class="controls">
+        <div class="pill-group">
+          <label class="pill active" data-p="today"><input type="radio" name="period" value="today" checked>当天</label>
+          <label class="pill" data-p="week"><input type="radio" name="period" value="week">近7天</label>
+          <label class="pill" data-p="month"><input type="radio" name="period" value="month">近30天</label>
+          <label class="pill" data-p="custom"><input type="radio" name="period" value="custom">自定义</label>
+        </div>
+        <span id="customDates" class="hidden">
+          <input type="date" id="fromDate"> 至 <input type="date" id="toDate">
+        </span>
+      </div>
+    </div>
+
+    <div class="card" style="animation-delay:.1s">
+      <div class="card-title"><span class="bar"></span>用量概览</div>
+      <div class="stats">
+        <div class="stat hero">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+          <div class="k">当前区间 · 消耗合计（输入含缓存 + 输出）</div>
+          <div class="v" id="sTotal">-</div>
+        </div>
+        <div class="stat cost">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="18"/></svg></div>
+          <div class="k">当前区间 · 预估金额（人民币 · 分高峰/低谷计价）</div>
+          <div class="v" id="sCost">-</div>
+          <div class="extra" id="sCostDetail"></div>
+        </div>
+        <div class="stat">
+          <div class="ic c-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+          <div class="k">输入 tokens（含缓存读取）</div>
+          <div class="v" id="sInput">-</div>
+          <div class="extra" id="sInputDetail"></div>
+        </div>
+        <div class="stat">
+          <div class="ic c-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 9v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><polyline points="7 14 12 19 17 14"/><line x1="12" y1="19" x2="12" y2="7"/></svg></div>
+          <div class="k">输出 tokens</div>
+          <div class="v" id="sOutput">-</div>
+        </div>
+        <div class="stat">
+          <div class="ic c-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+          <div class="k">LLM 调用次数</div>
+          <div class="v small" id="sCalls">-</div>
+        </div>
+        <div class="stat">
+          <div class="ic c-slate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
+          <div class="k">其中 · 未缓存输入</div>
+          <div class="v small" id="sUncached">-</div>
+        </div>
+        <div class="stat">
+          <div class="ic c-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+          <div class="k">缓存读取 tokens</div>
+          <div class="v" id="sCache">-</div>
+        </div>
+        <div class="stat">
+          <div class="ic c-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+          <div class="k">高峰时段 · 用量（输入+输出）</div>
+          <div class="v small" id="sPeak">-</div>
+          <div class="extra" id="sPeakDetail"></div>
+        </div>
+        <div class="stat">
+          <div class="ic c-slate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+          <div class="k">低谷时段 · 用量（输入+输出）</div>
+          <div class="v small" id="sOffpeak">-</div>
+          <div class="extra" id="sOffpeakDetail"></div>
+        </div>
+        <div class="stat">
+          <div class="ic c-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="k">涉及会话数</div>
+          <div class="v small" id="sSessions">-</div>
+        </div>
+      </div>
+      <div class="grand-row">
+        <div><div class="k">全部会话 · 累计消耗（输入含缓存 + 输出）</div><div class="vv" id="sGrand">-</div></div>
+        <div class="sep"></div>
+        <div><div class="k">累计预估金额（分高峰/低谷）</div><div class="vv" id="sGrandCost" style="color:var(--green)">-</div></div>
+      </div>
+      <div class="cachebar">
+        <div class="cb-head">
+          <span class="cb-label"><span class="sw"></span>当前区间 · 缓存命中率（输入 tokens）</span>
+          <span class="cb-pct" id="sCacheHit">-</span>
+        </div>
+        <div class="cb-track"><div class="cb-fill" id="sCacheFill"></div></div>
+        <div class="cb-sub" id="sCacheSub"></div>
+      </div>
+      <p style="font-size:11.5px;color:var(--faint);margin-top:12px">计价：DeepSeek V4 Flash 官方人民币定价（8月17日涨价后，元 / 百万 tokens）。高峰时段（01:00–04:00、06:00–10:00 UTC）：未缓存输入 ¥3.0 · 缓存命中 ¥0.10 · 输出 ¥9.0；低谷（其余时段，半价）：¥1.5 · ¥0.05 · ¥4.5。按每条用量记录的实际时间分别按高峰/低谷计价。</p>
+    </div>
+
+    <div class="card" style="animation-delay:.15s">
+      <div class="card-title"><span class="bar"></span><span id="chartTitle">使用趋势</span></div>
+      <div id="chartBox">
+        <canvas id="chart"></canvas>
+      </div>
+      <div class="legend">
+        <span class="lg"><span class="sw grad-in"></span>输入（含缓存读取）</span>
+        <span class="lg"><span class="sw grad-out"></span>输出</span>
+        <span class="lg"><span class="sw peak"></span>高峰时段（当天视图标记）</span>
+        <span class="lg" style="color:var(--faint)">口径同 DSH：输入 = 未缓存输入 + 缓存读取 + 缓存写入</span>
+      </div>
+    </div>
+
+    <div class="card" style="animation-delay:.2s">
+      <div class="card-title"><span class="bar"></span>各会话用量（当前区间）</div>
+      <div class="table-wrap">
+        <table id="sessionTable">
+          <thead>
+            <tr>
+              <th>会话</th><th>目录</th><th>开始时间</th>
+              <th>调用次数</th><th>未缓存输入</th><th>缓存读取</th><th>输入（含缓存）</th><th>输出</th><th>合计</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 必须挂在 body 直接子级：祖先的 backdrop-filter/transform 会让 position:fixed
+     相对该祖先定位（而不是视口），导致 tooltip 位置错乱 -->
+<div id="tooltip"></div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+let DATA = null;
+let period = "today";
+let hovered = -1;
+let barRects = [];
+let lastItems = [];
+const TZ_OFF = new Date().getTimezoneOffset() / 60; // hours; negative east of UTC
+
+function pad(n) { return String(n).padStart(2, "0"); }
+function fmt(n) {
+  n = Math.round(n);
+  if (n >= 1e8) return (n / 1e8).toFixed(2) + " 亿";
+  if (n >= 1e4) return (n / 1e4).toFixed(1) + " 万";
+  return n.toLocaleString("en-US");
+}
+function fmtFull(n) { return n.toLocaleString("en-US"); }
+function fmtMoney(n) {
+  if (n >= 10000) return (n / 10000).toFixed(2) + " 万元";
+  if (n >= 100) return "¥" + n.toFixed(1);
+  return "¥" + n.toFixed(2);
+}
+// DeepSeek V4 Flash 官方人民币定价（8月17日涨价后），元 / 1M tokens。
+// 高峰时段：01:00-04:00 与 06:00-10:00 UTC；低谷为高峰半价。
+// 未缓存输入(缓存未命中) 高峰 ¥3.0 / 低谷 ¥1.5 · 缓存读取(缓存命中) 高峰 ¥0.10 / 低谷 ¥0.05 · 输出 高峰 ¥9.0 / 低谷 ¥4.5（缓存写入官方未计价）
+const PRICE = {
+  peak: { uncachedPerM: 3.0, cacheReadPerM: 0.10, cacheWritePerM: 0, outputPerM: 9.0 },
+  offpeak: { uncachedPerM: 1.5, cacheReadPerM: 0.05, cacheWritePerM: 0, outputPerM: 4.5 }
+};
+function isPeak(t) {
+  const h = new Date(t).getUTCHours();
+  return (h >= 1 && h < 4) || (h >= 6 && h < 10);
+}
+function isPeakLocalHour(localHour) {
+  const u = (((localHour + TZ_OFF) % 24) + 24) % 24;
+  return (u >= 1 && u < 4) || (u >= 6 && u < 10);
+}
+function costOf(uncached, cacheRead, cacheWrite, output, tier) {
+  const p = PRICE[tier];
+  return uncached / 1e6 * p.uncachedPerM
+    + cacheRead / 1e6 * p.cacheReadPerM
+    + (cacheWrite || 0) / 1e6 * p.cacheWritePerM
+    + output / 1e6 * p.outputPerM;
+}
+function dayKey(t) { const d = new Date(t); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+function fmtDateTime(t) {
+  const d = new Date(t);
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+}
+function fmtDateOnly(t) {
+  const d = new Date(t);
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+}
+
+function currentRange() {
+  const now = Date.now();
+  const ts = startOfToday();
+  const day = 86400000;
+  if (period === "today") return { from: ts, to: now, label: "当天" };
+  if (period === "week") return { from: ts - 6 * day, to: now, label: "近7天" };
+  if (period === "month") return { from: ts - 29 * day, to: now, label: "近30天" };
+  const f = $("fromDate").value, t = $("toDate").value;
+  if (f && t) {
+    const from = new Date(f + "T00:00:00").getTime();
+    const to = new Date(t + "T23:59:59.999").getTime();
+    return { from, to, label: "自定义" };
+  }
+  return { from: ts - 29 * day, to: now, label: "近30天" };
+}
+function inRange(t, range) { return t >= range.from && t <= range.to; }
+// billed input = uncachedInput + cacheRead + cacheWrite (matches DSH GUI)
+function inputOf(r) { return r.uncachedInput + r.cacheRead + (r.cacheWrite || 0); }
+function totalOf(r) { return inputOf(r) + r.output; }
+
+// 数据来源优先级：插件端点（/api/token-stats/refresh）> exe 端点（/api/refresh）> 本地数据文件。
+async function fetchFresh() {
+  for (const p of ["/api/token-stats/refresh", "/api/refresh", "token-usage.json"]) {
+    try {
+      const res = await fetch(p, { cache: "no-store" });
+      if (res.ok) {
+        const obj = await res.json();
+        if (obj && Array.isArray(obj.records)) return obj;
+      }
+    } catch { }
+  }
+  return null;
+}
+async function loadByFetch() {
+  const obj = await fetchFresh();
+  if (obj) { DATA = obj; return true; }
+  return false;
+}
+function acceptFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const obj = JSON.parse(reader.result);
+      if (!Array.isArray(obj.records)) throw new Error("records 字段缺失，不是 collect-tokens.mjs 生成的 token-usage.json");
+      DATA = obj;
+      init();
+    } catch (e) { alert("数据文件解析失败：" + e.message); }
+  };
+  reader.readAsText(file);
+}
+async function initData() {
+  const ok = await loadByFetch();
+  if (!ok) $("loadCard").classList.remove("hidden");
+}
+// ── 自动刷新：每 60 秒重新采集一次（插件 /api/token-stats/refresh → exe /api/refresh → 数据文件）。
+// 数据签名未变化时不重绘（避免重复触发滚动/柱状图动画）；后台标签页自动暂停。
+let autoTimer = null;
+let autoBusy = false;
+let lastSig = "";
+function dataSig(d) { return (d.generatedAt || "") + "|" + (d.records ? d.records.length : 0); }
+async function autoRefresh() {
+  if (autoBusy || !DATA || document.hidden) return;
+  autoBusy = true;
+  try {
+    const obj = await fetchFresh();
+    if (obj && dataSig(obj) !== lastSig) {
+      DATA = obj;
+      init();
+    }
+  } finally {
+    autoBusy = false;
+  }
+}
+function startAutoRefresh() {
+  if (autoTimer) return;
+  autoTimer = setInterval(autoRefresh, 60000);
+}
+// 刷新：优先请求插件/exe 服务重新采集，其次重读数据文件，最后回退到文件选择。
+async function refreshData() {
+  const btn = $("reloadBtn");
+  btn.classList.add("spinning");
+  btn.disabled = true;
+  $("reloadLabel").textContent = "刷新中…";
+  try {
+    const obj = await fetchFresh();
+    if (obj) { DATA = obj; init(); return; }
+    $("fileInput").click();
+  } finally {
+    btn.classList.remove("spinning");
+    btn.disabled = false;
+    $("reloadLabel").textContent = "刷新";
+  }
+}
+function init() {
+  $("loadCard").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  const when = DATA.generatedAt ? "，数据生成于 " + fmtDateTime(Date.parse(DATA.generatedAt)) : "";
+  const sessions = DATA.sessions ? DATA.sessions.length : "-";
+  const calls = DATA.records.length;
+  $("metaLine").innerHTML =
+    '<span class="chip"><span class="dot"></span>数据已加载</span>' +
+    '<span class="chip">数据源 <b>' + esc(DATA.dshHome || "$DSH_HOME") + "/sessions</b></span>" +
+    '<span class="chip"><b>' + sessions + '</b> 个会话</span>' +
+    '<span class="chip"><b>' + fmtFull(calls) + '</b> 条用量记录</span>' +
+    (when ? '<span class="chip">生成于 ' + esc(when.replace(/^，数据生成于 /, "")) + "</span>" : "");
+  lastSig = dataSig(DATA);
+  startAutoRefresh();
+  const la = $("lastAuto");
+  if (la) la.textContent = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+  render();
+}
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ---------- number tween (count-up) ---------- */
+const animVals = new Map();
+function countUp(el, target, fmtFn) {
+  if (!el) return;
+  const from = animVals.get(el.id);
+  if (from === undefined) { el.textContent = fmtFn(target); animVals.set(el.id, target); return; }
+  if (from === target) { el.textContent = fmtFn(target); return; }
+  const start = performance.now();
+  const dur = 480;
+  const step = (now) => {
+    const p = Math.min(1, (now - start) / dur);
+    const e = 1 - Math.pow(1 - p, 3);
+    const v = from + (target - from) * e;
+    el.textContent = fmtFn(v);
+    if (p < 1) requestAnimationFrame(step); else animVals.set(el.id, target);
+  };
+  requestAnimationFrame(step);
+}
+
+function filteredRecords() {
+  const range = currentRange();
+  return { range, list: DATA.records.filter((r) => inRange(r.t, range)) };
+}
+
+function buildItems(list, range) {
+  const apply = (it, r) => {
+    it.uncached += r.uncachedInput; it.cacheRead += r.cacheRead;
+    it.cacheWrite += r.cacheWrite || 0; it.output += r.output;
+    if (isPeak(r.t)) it.peak += r.uncachedInput + r.cacheRead + (r.cacheWrite || 0) + r.output;
+    it.cost += costOf(r.uncachedInput, r.cacheRead, r.cacheWrite || 0, r.output, isPeak(r.t) ? "peak" : "offpeak");
+  };
+  if (period === "today") {
+    const items = [];
+    for (let h = 0; h < 24; h++) items.push({ label: pad(h) + ":00", uncached: 0, cacheRead: 0, cacheWrite: 0, output: 0, peak: 0, cost: 0 });
+    for (const r of list) apply(items[new Date(r.t).getHours()], r);
+    return items;
+  }
+  const day = 86400000;
+  const start = Math.floor(range.from / day) * day;
+  const end = Math.floor(range.to / day) * day;
+  const items = [];
+  for (let t = start; t <= end; t += day) {
+    items.push({ label: fmtDateOnly(t), key: dayKey(t), uncached: 0, cacheRead: 0, cacheWrite: 0, output: 0, peak: 0, cost: 0 });
+  }
+  const idx = new Map(items.map((it, i) => [it.key, i]));
+  for (const r of list) {
+    const i = idx.get(dayKey(r.t));
+    if (i !== undefined) apply(items[i], r);
+  }
+  return items;
+}
+
+function render() {
+  const { range, list } = filteredRecords();
+  const items = buildItems(list, range);
+  lastItems = items;
+
+  let tu = 0, tc = 0, tw = 0, to = 0;
+  let pTu = 0, pTc = 0, pTo = 0;
+  for (const r of list) {
+    tu += r.uncachedInput; tc += r.cacheRead; tw += r.cacheWrite || 0; to += r.output;
+    if (isPeak(r.t)) { pTu += r.uncachedInput; pTc += r.cacheRead; pTo += r.output; }
+  }
+  const ti = tu + tc + tw;
+  const peakCost = costOf(pTu, pTc, 0, pTo, "peak");
+  const offCost = costOf(tu - pTu, tc - pTc, tw, to - pTo, "offpeak");
+  const cost = peakCost + offCost;
+  countUp($("sTotal"), ti + to, fmt);
+  countUp($("sInput"), ti, fmt);
+  $("sInputDetail").textContent = "未缓存 " + fmt(tu) + " + 缓存读取 " + fmt(tc) + (tw > 0 ? " + 缓存写入 " + fmt(tw) : "");
+  countUp($("sUncached"), tu, fmt);
+  countUp($("sCache"), tc, fmt);
+  countUp($("sOutput"), to, fmt);
+  countUp($("sCost"), cost, fmtMoney);
+  const costUncached = costOf(tu, 0, 0, 0, "peak") + costOf(tu - pTu, 0, 0, 0, "offpeak");
+  const costCache = costOf(0, tc, 0, 0, "peak") + costOf(0, tc - pTc, 0, 0, "offpeak");
+  const costOutput = costOf(0, 0, 0, to, "peak") + costOf(0, 0, 0, to - pTo, "offpeak");
+  $("sCostDetail").textContent = "高峰 " + fmtMoney(peakCost) + " + 低谷 " + fmtMoney(offCost) + "（未缓存 " + fmtMoney(costUncached) + " + 缓存 " + fmtMoney(costCache) + " + 输出 " + fmtMoney(costOutput) + "）";
+  const peakTokens = pTu + pTc + pTo;
+  countUp($("sPeak"), peakTokens, fmt);
+  $("sPeakDetail").textContent = "输入 " + fmt(pTu + pTc) + " / 输出 " + fmt(pTo);
+  countUp($("sOffpeak"), ti + to - peakTokens, fmt);
+  $("sOffpeakDetail").textContent = "输入 " + fmt((tu - pTu) + (tc - pTc)) + " / 输出 " + fmt(to - pTo);
+  countUp($("sCalls"), list.length, fmtFull);
+  countUp($("sSessions"), new Set(list.map((r) => r.session)).size, fmtFull);
+
+  let gu = 0, gc = 0, gw = 0, go = 0, gpu = 0, gpc = 0, gpo = 0;
+  for (const r of DATA.records) {
+    gu += r.uncachedInput; gc += r.cacheRead; gw += r.cacheWrite || 0; go += r.output;
+    if (isPeak(r.t)) { gpu += r.uncachedInput; gpc += r.cacheRead; gpo += r.output; }
+  }
+  const gi = gu + gc + gw;
+  const gPeak = costOf(gpu, gpc, 0, gpo, "peak");
+  const gOff = costOf(gu - gpu, gc - gpc, gw, go - gpo, "offpeak");
+  countUp($("sGrand"), gi + go, (n) => fmt(n) + "（输入 " + fmt(gi) + " / 输出 " + fmt(go) + "）");
+  countUp($("sGrandCost"), gPeak + gOff, (n) => fmtMoney(n) + "（高峰 " + fmtMoney(gPeak) + " + 低谷 " + fmtMoney(gOff) + "）");
+
+  // 缓存命中率（输入 tokens）：缓存读取 / 输入（含缓存）——随当前统计区间过滤（tu/tc/tw 来自 list）
+  const hitPct = ti > 0 ? (tc / ti) * 100 : 0;
+  countUp($("sCacheHit"), hitPct, (n) => n.toFixed(1) + "%");
+  $("sCacheFill").style.width = hitPct.toFixed(1) + "%";
+  $("sCacheSub").textContent =
+    "缓存读取 " + fmt(tc) + " / 输入 " + fmt(ti) +
+    "（未缓存 " + fmt(tu) + (tw > 0 ? " + 缓存写入 " + fmt(tw) : "") + "）";
+
+  $("chartTitle").textContent =
+    "使用趋势 · " + range.label + (period === "today" ? "（按小时）" : "（按日期）") +
+    " ｜ 区间合计 " + fmt(ti + to) + " tokens（输入 " + fmt(ti) + " / 输出 " + fmt(to) + "）";
+
+  renderChart(items, true);
+  renderTable(list);
+}
+
+function renderTable(list) {
+  const bySession = new Map();
+  for (const r of list) {
+    let s = bySession.get(r.session);
+    if (!s) { s = { id: r.session, calls: 0, uncached: 0, cacheRead: 0, cacheWrite: 0, output: 0, first: r.t, last: r.t }; bySession.set(r.session, s); }
+    s.calls++; s.uncached += r.uncachedInput; s.cacheRead += r.cacheRead;
+    s.cacheWrite += r.cacheWrite || 0; s.output += r.output;
+    s.first = Math.min(s.first, r.t); s.last = Math.max(s.last, r.t);
+  }
+  const meta = new Map((DATA.sessions || []).map((s) => [s.id, s]));
+  const rows = [...bySession.values()].sort((a, b) => (b.uncached + b.cacheRead + b.cacheWrite + b.output) - (a.uncached + a.cacheRead + a.cacheWrite + a.output));
+  const tbody = $("sessionTable").querySelector("tbody");
+  tbody.innerHTML = "";
+  rows.forEach((s, idx) => {
+    const m = meta.get(s.id);
+    const title = m && m.title ? m.title : "(未命名)";
+    const input = s.uncached + s.cacheRead + s.cacheWrite;
+    const avColor = ["#2f6fe4", "#7c5cff", "#0e9fc0", "#d97706", "#10b981"][idx % 5];
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td><div class="sess-cell"><span class="sess-av" style="background:linear-gradient(135deg,' + avColor + ',' + avColor + 'cc)">' + esc(title.slice(0, 1) || "?") + '</span><div><div class="t-title" title="' + esc(m && m.cwd ? m.cwd : "") + '">' + esc(title) + '</div><div class="t-id">' + esc(s.id) + "</div></div></div></td>" +
+      "<td><div class='t-cwd' title='" + esc(m && m.cwd ? m.cwd : "") + "'>" + esc(m && m.cwd ? m.cwd : "-") + "</div></td>" +
+      "<td>" + fmtDateTime(s.first) + "</td>" +
+      "<td>" + s.calls + "</td>" +
+      "<td>" + fmt(s.uncached) + "</td>" +
+      "<td>" + fmt(s.cacheRead) + "</td>" +
+      "<td>" + fmt(input) + "</td>" +
+      "<td>" + fmt(s.output) + "</td>" +
+      "<td><b>" + fmt(input + s.output) + "</b></td>";
+    tbody.appendChild(tr);
+  });
+  const foot = $("sessionTable").querySelector("tfoot");
+  foot.innerHTML = "";
+  if (rows.length) {
+    const T = rows.reduce((a, s) => ({ uncached: a.uncached + s.uncached, cacheRead: a.cacheRead + s.cacheRead, cacheWrite: a.cacheWrite + s.cacheWrite, output: a.output + s.output, calls: a.calls + s.calls }), { uncached: 0, cacheRead: 0, cacheWrite: 0, output: 0, calls: 0 });
+    const input = T.uncached + T.cacheRead + T.cacheWrite;
+    foot.innerHTML = "<tr><td>合计（" + rows.length + " 个会话）</td><td></td><td></td><td>" + T.calls + "</td><td>" + fmt(T.uncached) + "</td><td>" + fmt(T.cacheRead) + "</td><td>" + fmt(input) + "</td><td>" + fmt(T.output) + "</td><td>" + fmt(input + T.output) + "</td></tr>";
+  }
+}
+
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const pow = Math.pow(10, Math.floor(Math.log10(v)));
+  const m = v / pow;
+  const nice = m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10;
+  return nice * pow;
+}
+
+/* ---------- chart ---------- */
+let barProgress = 1;
+function drawChart(items, progress, W, H, dpr, canvas, ctx) {
+  const mL = 58, mR = 12, mT = 16, mB = 32;
+  const plotW = W - mL - mR, plotH = H - mT - mB;
+  const values = items.map((it) => (it.uncached + it.cacheRead + it.cacheWrite) + it.output);
+  const max = niceMax(Math.max(...values, 1));
+  const n = items.length;
+  barRects = [];
+  const slot = plotW / n;
+  const barW = Math.max(Math.min(slot * 0.66, 42), 3);
+  ctx.clearRect(0, 0, W, H);
+  ctx.font = "11px 'Segoe UI', 'Microsoft YaHei', sans-serif";
+  ctx.textBaseline = "middle";
+
+  // dashed grid + y labels
+  const steps = 5;
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = "rgba(148,163,184,.13)";
+  ctx.fillStyle = "#64708f";
+  ctx.textAlign = "right";
+  for (let i = 0; i <= steps; i++) {
+    const v = (max / steps) * i;
+    const y = mT + plotH - (v / max) * plotH;
+    ctx.beginPath(); ctx.moveTo(mL, y); ctx.lineTo(W - mR, y); ctx.stroke();
+    ctx.fillText(fmt(v), mL - 9, y);
+  }
+  ctx.setLineDash([]);
+
+  const labelEvery = n > 31 ? Math.ceil(n / 18) : 1;
+  for (let i = 0; i < n; i++) {
+    const it = items[i];
+    const x = mL + i * slot + (slot - barW) / 2;
+    const inputV = (it.uncached + it.cacheRead + it.cacheWrite) * progress;
+    const outV = it.output * progress;
+    const hIn = (inputV / max) * plotH;
+    const hOut = (outV / max) * plotH;
+    const yIn = mT + plotH - hIn;
+    const yOut = yIn - hOut;
+    const hover = (i === hovered);
+    const r = Math.min(5, barW / 2);
+    // input bar (gradient)
+    const gIn = ctx.createLinearGradient(0, yIn, 0, mT + plotH);
+    gIn.addColorStop(0, hover ? "#8ab4ff" : "#6fa1ff");
+    gIn.addColorStop(1, hover ? "#4a7de8" : "#3568d4");
+    ctx.fillStyle = gIn;
+    if (hIn > 0) roundRect(ctx, x, yIn, barW, Math.max(hIn, 0.6), r, r, 0, 0);
+    // output bar (gradient)
+    const gOut = ctx.createLinearGradient(0, yOut, 0, yIn);
+    gOut.addColorStop(0, hover ? "#ffd98f" : "#ffd07a");
+    gOut.addColorStop(1, hover ? "#e08a00" : "#c9820a");
+    ctx.fillStyle = gOut;
+    if (hOut > 0) roundRect(ctx, x, yOut, barW, Math.max(hOut, 0.6), 0, 0, r, r);
+    // peak marker (today view only)
+    if (period === "today" && isPeakLocalHour(i) && (hIn + hOut) > 0.6) {
+      const top = yOut < yIn ? yOut : yIn;
+      ctx.fillStyle = hover ? "#fcd34d" : "#f59e0b";
+      ctx.beginPath();
+      ctx.moveTo(x + barW / 2, top - 5);
+      ctx.lineTo(x + barW / 2 - 3.4, top - 0.6);
+      ctx.lineTo(x + barW / 2 + 3.4, top - 0.6);
+      ctx.closePath();
+      ctx.fill();
+    }
+    barRects.push({ x, y: Math.min(yIn, yOut) - 7, w: barW, h: plotH - Math.min(yIn, yOut) + mT + 7 });
+    if (i % labelEvery === 0) {
+      ctx.fillStyle = "#64708f";
+      ctx.textAlign = "center";
+      ctx.fillText(it.label, mL + i * slot + slot / 2, H - mB + 14);
+    }
+  }
+  // baseline
+  ctx.strokeStyle = "rgba(148,163,184,.3)";
+  ctx.beginPath(); ctx.moveTo(mL, mT + plotH); ctx.lineTo(W - mR, mT + plotH); ctx.stroke();
+}
+function roundRect(ctx, x, y, w, h, rTL, rTR, rBR, rBL) {
+  if (w <= 0 || h <= 0) return;
+  rTL = Math.min(rTL, w / 2, h / 2); rTR = Math.min(rTR, w / 2, h / 2);
+  rBR = Math.min(rBR, w / 2, h / 2); rBL = Math.min(rBL, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rTL, y);
+  ctx.lineTo(x + w - rTR, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rTR);
+  ctx.lineTo(x + w, y + h - rBR);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rBR, y + h);
+  ctx.lineTo(x + rBL, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rBL);
+  ctx.lineTo(x, y + rTL);
+  ctx.quadraticCurveTo(x, y, x + rTL, y);
+  ctx.closePath();
+  ctx.fill();
+}
+function chartCtx() {
+  const canvas = $("chart");
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const W = Math.max(rect.width, 200), H = 330;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { canvas, ctx, W, H, dpr };
+}
+function renderChart(items, animate) {
+  const { canvas, ctx, W, H, dpr } = chartCtx();
+  if (animate && barProgress >= 1) {
+    // start grow animation from 0
+    barProgress = 0;
+    const start = performance.now();
+    const dur = 620;
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      barProgress = e;
+      drawChart(items, e, W, H, dpr, canvas, ctx);
+      if (p < 1) requestAnimationFrame(step); else barProgress = 1;
+    };
+    requestAnimationFrame(step);
+  } else {
+    drawChart(items, barProgress, W, H, dpr, canvas, ctx);
+  }
+}
+
+function showTooltip(e, item) {
+  const tt = $("tooltip");
+  const input = item.uncached + item.cacheRead + item.cacheWrite;
+  const total = input + item.output;
+  const row = (sw, label, val) =>
+    '<div class="tt-row"><span class="c"><span class="sw" style="background:' + sw + '"></span>' + label + '</span><span class="c b">' + val + "</span></div>";
+  const sub = (label, val) =>
+    '<div class="tt-row sub"><span class="c">' + label + '</span><span class="c b">' + val + "</span></div>";
+  tt.innerHTML =
+    '<div class="tt-title">' + (period === "today" ? "今天 " + item.label : item.label) + "</div>" +
+    row("#4f8cff", "合计（输入+输出）", fmt(total)) +
+    sub("高峰时段", fmt(item.peak)) +
+    sub("低谷时段", fmt(total - item.peak)) +
+    row("#4f8cff", "输入（含缓存）", fmt(input)) +
+    sub("未缓存", fmt(item.uncached)) +
+    sub("缓存读取", fmt(item.cacheRead)) +
+    (item.cacheWrite > 0 ? sub("缓存写入", fmt(item.cacheWrite)) : "") +
+    row("#7c5cff", "输出", fmt(item.output)) +
+    row("#34d399", "预估费用（分高峰/低谷）", fmtMoney(item.cost));
+  tt.style.display = "block";
+  const tw = tt.offsetWidth, th = tt.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + tw > window.innerWidth - 8) x = e.clientX - tw - 14;
+  if (y + th > window.innerHeight - 8) y = e.clientY - th - 14;
+  tt.style.left = x + "px"; tt.style.top = y + "px";
+}
+
+function bindChart() {
+  const canvas = $("chart");
+  canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    let idx = -1;
+    for (let i = 0; i < barRects.length; i++) {
+      const r = barRects[i];
+      if (x >= r.x - 2 && x <= r.x + r.w + 6) { idx = i; break; }
+    }
+    if (idx !== hovered) { hovered = idx; renderChart(lastItems, false); }
+    if (idx >= 0) showTooltip(e, lastItems[idx]);
+    else $("tooltip").style.display = "none";
+  });
+  canvas.addEventListener("mouseleave", () => {
+    hovered = -1; $("tooltip").style.display = "none"; renderChart(lastItems, false);
+  });
+}
+window.addEventListener("resize", () => { if (DATA) renderChart(lastItems, false); });
+
+function bindControls() {
+  document.querySelectorAll("label.pill").forEach((el) => {
+    el.addEventListener("click", () => {
+      period = el.dataset.p;
+      document.querySelectorAll("label.pill").forEach((x) => x.classList.toggle("active", x === el));
+      $("customDates").classList.toggle("hidden", period !== "custom");
+      if (period === "custom" && !$("fromDate").value) {
+        const d = new Date(Date.now() - 6 * 86400000);
+        $("fromDate").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+        $("toDate").value = new Date().toISOString().slice(0, 10);
+      }
+      render();
+    });
+  });
+  ["fromDate", "toDate"].forEach((id) => $(id).addEventListener("change", () => { if (period === "custom") render(); }));
+  $("reloadBtn").addEventListener("click", refreshData);
+  $("dropzone").addEventListener("click", () => $("fileInput").click());
+  $("fileInput").addEventListener("change", (e) => { if (e.target.files[0]) acceptFile(e.target.files[0]); });
+  document.addEventListener("dragover", (e) => e.preventDefault());
+  document.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) acceptFile(f);
+  });
+}
+
+bindChart();
+bindControls();
+// data priority: injected by the exe (window.__DSH_DATA__) > fetch > file picker
+if (typeof window.__DSH_DATA__ !== "undefined" && window.__DSH_DATA__) {
+  DATA = window.__DSH_DATA__;
+  init();
+} else {
+  initData();
+}
+</script>
+</body>
+</html>

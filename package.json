@@ -1,0 +1,45 @@
+{
+  "name": "@shallbay/dsh-token-stats",
+  "description": "Harness-wide token usage dashboard: aggregates billed token usage across all sessions (uncached input / cache read / cache write / output) with peak/off-peak CNY cost estimation, served at /token-stats with live refresh at /api/token-stats/refresh. Client half adds a 'Token 用量' entry above Settings in the web sidebar.",
+  "version": "1.0.1",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "platform": "web"
+    }
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "lib/dashboard.html",
+    "cordis.patch.yml"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "token",
+    "usage",
+    "dashboard",
+    "plugin"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

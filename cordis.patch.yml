@@ -1,0 +1,7 @@
+# @shallbay/dsh-token-stats bundle patch: mounts the token usage dashboard
+# into a dsh profile layer stack. `dsh plugin --profile <name> add
+# @shallbay/dsh-token-stats` installs the package and reconciles it into the
+# profile's dsh.profile.bundles layer list automatically.
+- insert:
+    - id: token-stats
+      name: '@shallbay/dsh-token-stats'
