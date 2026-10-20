@@ -1,7 +1,8 @@
-# @shallbay/dsh-token-stats bundle patch: mounts the token usage dashboard
-# into a dsh profile layer stack. `dsh plugin --profile <name> add
-# @shallbay/dsh-token-stats` installs the package and reconciles it into the
-# profile's dsh.profile.bundles layer list automatically.
+# @deepseek-ai/dsh-token-stats bundle patch: mounts the token usage dashboard
+# into a dsh profile layer stack. Selecting this package in the profile's
+# dsh.profile.bundles list (what `dsh plugin add` and the Desktop Plugins page
+# reconcile) applies the insert below; a profile that installs the package by
+# hand instead can copy this entry into its own cordis.patch.yml.
 - insert:
     - id: token-stats
-      name: '@shallbay/dsh-token-stats'
+      name: '@deepseek-ai/dsh-token-stats'

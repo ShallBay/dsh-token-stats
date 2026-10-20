@@ -1,0 +1,18 @@
+# 发布凭据与构建产物，绝不提交
+.npmrc
+dist/
+node_modules/
+
+# 打包/部署产生的临时文件
+*.tgz
+*.bak-*
+npm-debug.log*
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/

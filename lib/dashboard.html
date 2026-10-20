@@ -6,30 +6,30 @@
 <title>DeepSeek Harness · Token 用量统计</title>
 <style>
   :root {
-    --bg: #0a0e1a;
-    --panel: rgba(21, 28, 47, .86);
-    --panel2: rgba(29, 38, 61, .72);
-    --border: rgba(148, 163, 184, .13);
-    --border-strong: rgba(148, 163, 184, .24);
-    --text: #e8eefb;
-    --muted: #93a0bd;
-    --faint: #64708f;
-    --blue: #4f8cff;
-    --blue2: #7c5cff;
-    --cyan: #38d9f5;
-    --green: #34d399;
-    --orange: #fbbf24;
-    --amber: #f59e0b;
-    --red: #fb7185;
-    --grad: linear-gradient(135deg, #4f8cff, #7c5cff 55%, #c26bff);
+    --bg: #f4f6fb;
+    --panel: rgba(255, 255, 255, .90);
+    --panel2: rgba(246, 248, 253, .92);
+    --border: rgba(15, 23, 42, .10);
+    --border-strong: rgba(15, 23, 42, .20);
+    --text: #17223b;
+    --muted: #5a6a8a;
+    --faint: #8492ad;
+    --blue: #2563eb;
+    --blue2: #7c3aed;
+    --cyan: #0e91b0;
+    --green: #0f9d63;
+    --orange: #d97706;
+    --amber: #b45309;
+    --red: #dc2626;
+    --grad: linear-gradient(135deg, #2563eb, #7c3aed 55%, #a855f7);
     --radius: 16px;
     --radius-s: 10px;
-    --shadow: 0 10px 34px rgba(2, 6, 18, .45);
-    --glow-blue: rgba(79, 140, 255, .16);
+    --shadow: 0 10px 30px rgba(15, 23, 42, .08);
+    --glow-blue: rgba(37, 99, 235, .14);
     --mono: "Cascadia Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scrollbar-color: #2c3a5e transparent; }
+  html { scrollbar-color: #c3cde0 transparent; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -43,13 +43,13 @@
   .bgfx::before, .bgfx::after {
     content: ""; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5;
   }
-  .bgfx::before { width: 620px; height: 620px; left: -180px; top: -220px; background: radial-gradient(circle, rgba(79,140,255,.30), transparent 65%); }
-  .bgfx::after { width: 560px; height: 560px; right: -160px; bottom: -220px; background: radial-gradient(circle, rgba(124,92,255,.24), transparent 65%); }
+  .bgfx::before { width: 620px; height: 620px; left: -180px; top: -220px; background: radial-gradient(circle, rgba(37,99,235,.14), transparent 65%); }
+  .bgfx::after { width: 560px; height: 560px; right: -160px; bottom: -220px; background: radial-gradient(circle, rgba(124,58,237,.11), transparent 65%); }
   .bgfx .grid {
     position: absolute; inset: 0;
     background-image:
-      linear-gradient(rgba(148,163,184,.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148,163,184,.045) 1px, transparent 1px);
+      linear-gradient(rgba(15,23,42,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,.045) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
   }
@@ -75,7 +75,7 @@
   .chip b { color: var(--text); font-weight: 600; }
   .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
   .chip .dot.pulse { animation: pulse 1.6s ease-in-out infinite; }
-  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, .45); } 50% { box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); } }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(15, 157, 99, .40); } 50% { box-shadow: 0 0 0 5px rgba(15, 157, 99, 0); } }
 
   /* ---------- generic cards ---------- */
   .card {
@@ -96,7 +96,7 @@
 
   /* ---------- controls ---------- */
   .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  .pill-group { display: inline-flex; gap: 4px; background: rgba(10,14,26,.55); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
+  .pill-group { display: inline-flex; gap: 4px; background: rgba(15,23,42,.045); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
   label.pill {
     display: inline-flex; align-items: center; gap: 7px;
     padding: 7px 15px; border-radius: 999px; cursor: pointer; font-size: 13.5px;
@@ -106,7 +106,7 @@
   label.pill input { display: none; }
   label.pill.active {
     background: var(--grad); color: #fff; font-weight: 600;
-    box-shadow: 0 4px 16px rgba(101, 116, 255, .45);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, .26);
   }
   .controls input[type="date"] {
     background: var(--panel2); color: var(--text); border: 1px solid var(--border);
@@ -131,7 +131,7 @@
     background: var(--panel2); border: 1px solid var(--border); border-radius: 14px;
     padding: 14px 15px 13px; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
   }
-  .stat:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 12px 28px rgba(2,6,18,.5); }
+  .stat:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: 0 12px 26px rgba(15,23,42,.10); }
   .stat .ic {
     width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
     margin-bottom: 10px; color: #fff;
@@ -142,20 +142,20 @@
   .stat .v.small { font-size: 16.5px; }
   .stat .extra { font-size: 10.5px; color: var(--faint); margin-top: 4px; line-height: 1.45; }
   .stat.hero {
-    background: linear-gradient(150deg, rgba(64,104,255,.22), rgba(124,92,255,.10) 60%, rgba(21,28,47,.4));
-    border-color: rgba(124,140,255,.4);
-    box-shadow: 0 0 34px rgba(88,110,255,.16), var(--shadow);
+    background: linear-gradient(150deg, rgba(37,99,235,.10), rgba(124,58,237,.06) 60%, rgba(255,255,255,.75));
+    border-color: rgba(37,99,235,.26);
+    box-shadow: 0 0 26px rgba(37,99,235,.10), var(--shadow);
   }
-  .stat.hero .k { color: #a9b9ff; }
-  .stat.hero .v { color: #fff; font-size: 24px; }
-  .stat.hero .ic { background: var(--grad); box-shadow: 0 4px 14px rgba(101,116,255,.5); }
+  .stat.hero .k { color: #3550c8; }
+  .stat.hero .v { color: #1b2b57; font-size: 24px; }
+  .stat.hero .ic { background: var(--grad); box-shadow: 0 4px 12px rgba(37,99,235,.28); }
   .stat.cost {
-    background: linear-gradient(150deg, rgba(52,211,153,.16), rgba(21,28,47,.4));
-    border-color: rgba(52,211,153,.32);
+    background: linear-gradient(150deg, rgba(15,157,99,.10), rgba(255,255,255,.75));
+    border-color: rgba(15,157,99,.26);
   }
-  .stat.cost .k { color: #8fe8c4; }
+  .stat.cost .k { color: #0b7a4d; }
   .stat.cost .v { color: var(--green); }
-  .stat.cost .ic { background: linear-gradient(135deg, #10b981, #34d399); box-shadow: 0 4px 14px rgba(52,211,153,.4); }
+  .stat.cost .ic { background: linear-gradient(135deg, #0f9d63, #34d399); box-shadow: 0 4px 12px rgba(15,157,99,.26); }
   .stat .ic.c-blue { background: linear-gradient(135deg, #2f6fe4, #4f8cff); }
   .stat .ic.c-violet { background: linear-gradient(135deg, #5b4bd6, #7c5cff); }
   .stat .ic.c-amber { background: linear-gradient(135deg, #d97706, #f59e0b); }
@@ -165,7 +165,7 @@
 
   .grand-row {
     margin-top: 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-    background: linear-gradient(90deg, rgba(79,140,255,.10), rgba(124,92,255,.06));
+    background: linear-gradient(90deg, rgba(37,99,235,.06), rgba(124,58,237,.04));
     border: 1px dashed var(--border-strong); border-radius: 12px; padding: 12px 16px;
   }
   .grand-row .k { font-size: 12px; color: var(--muted); }
@@ -175,7 +175,7 @@
   /* ---------- cache hit rate bar ---------- */
   .cachebar {
     margin-top: 12px; padding: 12px 16px 13px;
-    background: rgba(10, 14, 26, .35);
+    background: rgba(15, 23, 42, .035);
     border: 1px solid var(--border); border-radius: 12px;
   }
   .cachebar .cb-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
@@ -184,13 +184,13 @@
   .cachebar .cb-pct { font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--green); }
   .cachebar .cb-track {
     height: 8px; border-radius: 999px; overflow: hidden;
-    background: rgba(148, 163, 184, .14);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35);
+    background: rgba(15, 23, 42, .10);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, .06);
   }
   .cachebar .cb-fill {
     height: 100%; width: 0%; border-radius: 999px;
-    background: linear-gradient(90deg, #10b981, #34d399);
-    box-shadow: 0 0 10px rgba(52, 211, 153, .45);
+    background: linear-gradient(90deg, #0f9d63, #34d399);
+    box-shadow: 0 0 10px rgba(15, 157, 99, .30);
     transition: width .8s cubic-bezier(.2, .7, .3, 1);
   }
   .cachebar .cb-sub { margin-top: 7px; font-size: 11.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
@@ -201,19 +201,19 @@
   .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 10px; flex-wrap: wrap; align-items: center; }
   .legend .lg { display: inline-flex; align-items: center; gap: 6px; }
   .legend .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-  .legend .sw.grad-in { background: linear-gradient(180deg, #6fa1ff, #3a6fe8); }
-  .legend .sw.grad-out { background: linear-gradient(180deg, #ffd07a, #f59e0b); }
+  .legend .sw.grad-in { background: linear-gradient(180deg, #5b8cf0, #2757c4); }
+  .legend .sw.grad-out { background: linear-gradient(180deg, #f0b23c, #bd7a08); }
   .legend .sw.peak { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 6px var(--amber); }
   #tooltip {
     position: fixed; z-index: 20; pointer-events: none; display: none;
-    background: rgba(10, 15, 28, .92);
+    background: rgba(255, 255, 255, .98);
     border: 1px solid var(--border-strong); border-radius: 12px;
     padding: 10px 12px; font-size: 12px; line-height: 1.7;
-    box-shadow: 0 14px 40px rgba(0,0,0,.6);
+    box-shadow: 0 14px 36px rgba(15,23,42,.16);
     backdrop-filter: blur(12px);
     max-width: 300px;
   }
-  #tooltip .tt-title { font-weight: 700; margin-bottom: 5px; color: #fff; display: flex; align-items: center; gap: 7px; }
+  #tooltip .tt-title { font-weight: 700; margin-bottom: 5px; color: var(--text); display: flex; align-items: center; gap: 7px; }
   #tooltip .tt-row { display: flex; justify-content: space-between; gap: 18px; }
   #tooltip .tt-row.sub .c { color: var(--faint); padding-left: 16px; }
   #tooltip .tt-row .c { color: var(--muted); white-space: nowrap; }
@@ -221,26 +221,26 @@
   #tooltip .tt-row .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 5px; }
 
   /* ---------- table ---------- */
-  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: rgba(10,14,26,.4); }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,.70); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
   thead th {
     text-align: right; padding: 10px 14px; white-space: nowrap;
     font-size: 11.5px; font-weight: 600; color: var(--muted);
-    background: rgba(37, 48, 78, .5);
+    background: rgba(15, 23, 42, .05);
     border-bottom: 1px solid var(--border);
     position: sticky; top: 0; z-index: 1;
   }
   thead th:first-child, tbody td:first-child, tfoot td:first-child { text-align: left; }
-  tbody td { text-align: right; padding: 9px 14px; border-bottom: 1px solid rgba(148,163,184,.07); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  tbody td { text-align: right; padding: 9px 14px; border-bottom: 1px solid rgba(15,23,42,.06); white-space: nowrap; font-variant-numeric: tabular-nums; }
   tbody tr { transition: background .15s ease; }
-  tbody tr:hover { background: rgba(79,140,255,.07); }
+  tbody tr:hover { background: rgba(37,99,235,.06); }
   tbody tr:last-child td { border-bottom: none; }
   .t-title { max-width: 250px; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--text); }
   .t-id { color: var(--faint); font-size: 10.5px; font-family: var(--mono); }
   .t-cwd { color: var(--muted); font-size: 11px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
   tfoot td {
     border-top: 1px solid var(--border-strong); font-weight: 750; padding: 11px 14px;
-    background: linear-gradient(90deg, rgba(79,140,255,.10), rgba(124,92,255,.05));
+    background: linear-gradient(90deg, rgba(37,99,235,.07), rgba(124,58,237,.04));
     color: var(--text); font-variant-numeric: tabular-nums;
   }
   .sess-av {
@@ -256,19 +256,82 @@
     border: 2px dashed var(--border-strong); border-radius: 14px; padding: 34px 20px;
     text-align: center; color: var(--muted); cursor: pointer; transition: all .2s ease;
   }
-  #dropzone:hover { border-color: var(--blue); color: var(--text); background: rgba(79,140,255,.05); }
+  #dropzone:hover { border-color: var(--blue); color: var(--text); background: rgba(37,99,235,.05); }
   #dropzone .dz-ic { margin-bottom: 10px; }
   #dropzone .dz-ic svg { width: 34px; height: 34px; stroke: var(--blue); }
   .hidden { display: none !important; }
 
-  ::selection { background: rgba(79,140,255,.35); }
+  ::selection { background: rgba(37,99,235,.20); }
   @media (max-width: 640px) {
     .wrap { padding: 20px 14px 40px; }
     h1 { font-size: 22px; }
   }
   @media (max-width: 980px) { .stats { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .stats { grid-template-columns: 1fr; } }
+
+  /* ---------- 弹窗（嵌入）模式：紧凑头部 + 卡片自适应 ---------- */
+  html.embed body { min-height: 0; }
+  html.embed .bgfx { opacity: .6; }
+  html.embed .wrap { max-width: none; padding: 14px 16px 24px; }
+  html.embed header { margin-bottom: 14px; }
+  html.embed .h-left .kicker { display: none; }
+  html.embed h1 { font-size: 20px; }
+  html.embed .metaLine { margin-top: 6px; gap: 6px; }
+  html.embed .chip { padding: 2px 9px; font-size: 11px; }
+  html.embed .card { padding: 15px 17px; border-radius: 14px; margin-bottom: 14px; }
+  html.embed .card-title { margin-bottom: 12px; font-size: 14px; }
+  html.embed .card-title .sub { display: none; }
+  /* 统计小块固定一行 5 个（与整页一致）；窄弹窗沿用基础断点自动降为 2 列 / 1 列 */
+  html.embed .stats { gap: 10px; }
+  html.embed .stat { padding: 12px 13px 11px; }
+  html.embed .stat .ic { width: 26px; height: 26px; margin-bottom: 8px; }
+  html.embed .stat .v { font-size: 19px; }
+  html.embed .stat .v.small { font-size: 15px; }
+  html.embed .stat.hero .v { font-size: 21px; }
+  html.embed .grand-row { margin-top: 12px; padding: 10px 14px; }
+  html.embed canvas { height: clamp(190px, 30vh, 300px); }
+
+  /* ---------- 计费规则弹窗 ---------- */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 30; display: none;
+    align-items: center; justify-content: center; padding: 3vh 3vw;
+    background: rgba(15, 23, 42, .38); backdrop-filter: blur(3px);
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    display: flex; flex-direction: column; width: min(1060px, 96vw); max-height: 92vh;
+    overflow: hidden; background: #f7f9fd; border: 1px solid var(--border-strong);
+    border-radius: 16px; box-shadow: 0 24px 60px rgba(15, 23, 42, .28);
+    animation: rise .3s cubic-bezier(.2, .7, .3, 1) both;
+  }
+  .modal-head { flex: none; display: flex; align-items: center; gap: 10px; padding: 13px 16px; background: #fff; border-bottom: 1px solid var(--border); }
+  .modal-head .card-title { margin: 0; }
+  .modal-head .card-title .sub { display: inline; }
+  .modal-body { overflow: auto; padding: 16px 18px 4px; }
+  .modal-foot { flex: none; display: flex; align-items: center; gap: 10px; padding: 11px 16px; background: #fff; border-top: 1px solid var(--border); }
+  .modal-foot .hint { margin-right: auto; font-size: 12px; color: var(--green); }
+  .modal-foot .hint.warn { color: var(--amber); }
+  .price-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .price-table th, .price-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: center; }
+  .price-table thead th { background: rgba(15, 23, 42, .04); color: var(--text); font-weight: 650; }
+  .price-table thead tr:first-child th { font-size: 12.5px; }
+  .price-table thead tr:last-child th { font-size: 11.5px; font-weight: 500; color: var(--muted); }
+  .price-table tbody td.model { text-align: left; white-space: nowrap; font-weight: 600; }
+  .price-table tbody td.model .sub { display: block; font-size: 10.5px; font-weight: 400; color: var(--faint); }
+  .price-table tbody tr.unused td.model { color: var(--muted); }
+  .price-table input[type="number"] {
+    width: 84px; padding: 5px 7px; font-size: 12.5px; text-align: right; color: var(--text);
+    background: #fff; border: 1px solid var(--border-strong); border-radius: 8px; outline: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .price-table input[type="number"]:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--glow-blue); }
 </style>
+<script>
+  // 弹窗（iframe 嵌入）模式：紧凑头部并启用卡片自适应重排。
+  if (new URLSearchParams(location.search).has("embed") || window.self !== window.top) {
+    document.documentElement.classList.add("embed");
+  }
+</script>
 </head>
 <body>
 <div class="bgfx"><div class="grid"></div></div>
@@ -302,6 +365,10 @@
         <button class="btn" id="reloadBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           <span id="reloadLabel">刷新</span>
+        </button>
+        <button class="btn" id="pricingBtn" title="按模型调整计费单价">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>
+          <span>计费规则</span>
         </button>
       </div>
       <div class="controls">
@@ -388,7 +455,7 @@
         <div class="cb-track"><div class="cb-fill" id="sCacheFill"></div></div>
         <div class="cb-sub" id="sCacheSub"></div>
       </div>
-      <p style="font-size:11.5px;color:var(--faint);margin-top:12px">计价：DeepSeek V4 Flash 官方人民币定价（8月17日涨价后，元 / 百万 tokens）。高峰时段（01:00–04:00、06:00–10:00 UTC）：未缓存输入 ¥3.0 · 缓存命中 ¥0.10 · 输出 ¥9.0；低谷（其余时段，半价）：¥1.5 · ¥0.05 · ¥4.5。按每条用量记录的实际时间分别按高峰/低谷计价。</p>
+      <p style="font-size:11.5px;color:var(--faint);margin-top:12px">计价：默认单价（元 / 百万 tokens）缓存命中输入 0.02 / 0.04、缓存未命中输入 1 / 2、输出 4 / 8（空闲 / 高峰），可点上方「计费规则」按模型逐项修改。高峰时段为 01:00–04:00、06:00–10:00（UTC），其余为空闲时段；按每条用量记录的实际时间与其所属模型分别计价。</p>
     </div>
 
     <div class="card" style="animation-delay:.15s">
@@ -424,6 +491,45 @@
 
 <!-- 必须挂在 body 直接子级：祖先的 backdrop-filter/transform 会让 position:fixed
      相对该祖先定位（而不是视口），导致 tooltip 位置错乱 -->
+<div id="pricingModal" class="modal-backdrop">
+  <div class="modal" role="dialog" aria-label="计费规则">
+    <div class="modal-head">
+      <div class="card-title"><span class="bar"></span>计费规则<span class="sub" id="pricingScope"></span></div>
+      <button class="btn" id="pricingResetBtn" title="把下表恢复为默认单价">恢复默认</button>
+      <button class="btn" id="pricingCloseBtn" title="关闭（Esc）">✕</button>
+    </div>
+    <div class="modal-body">
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th rowspan="2">供应商</th>
+            <th rowspan="2">模型</th>
+            <th colspan="2">百万 tokens 输入（缓存命中）</th>
+            <th colspan="2">百万 tokens 输入（缓存未命中）</th>
+            <th colspan="2">百万 tokens 输出</th>
+          </tr>
+          <tr>
+            <th>空闲时段</th><th>高峰时段</th>
+            <th>空闲时段</th><th>高峰时段</th>
+            <th>空闲时段</th><th>高峰时段</th>
+          </tr>
+        </thead>
+        <tbody id="pricingBody"></tbody>
+      </table>
+      <p style="font-size:11.5px;color:var(--faint);margin:12px 0 2px">
+        单位：元 / 百万 tokens。默认单价：缓存命中输入 0.02 / 0.04、缓存未命中输入 1 / 2、输出 4 / 8（空闲 / 高峰）。
+        高峰时段为 01:00–04:00 与 06:00–10:00（UTC），其余为空闲时段；缓存写入按官方口径不计价。
+        保存后写入本机浏览器（localStorage），「预估金额」立即按新规则重算。
+      </p>
+    </div>
+    <div class="modal-foot">
+      <span class="hint" id="pricingHint"></span>
+      <button class="btn" id="pricingCancelBtn">取消</button>
+      <button class="btn" id="pricingSaveBtn">保存</button>
+    </div>
+  </div>
+</div>
+
 <div id="tooltip"></div>
 
 <script>
@@ -449,13 +555,60 @@ function fmtMoney(n) {
   if (n >= 100) return "¥" + n.toFixed(1);
   return "¥" + n.toFixed(2);
 }
-// DeepSeek V4 Flash 官方人民币定价（8月17日涨价后），元 / 1M tokens。
-// 高峰时段：01:00-04:00 与 06:00-10:00 UTC；低谷为高峰半价。
-// 未缓存输入(缓存未命中) 高峰 ¥3.0 / 低谷 ¥1.5 · 缓存读取(缓存命中) 高峰 ¥0.10 / 低谷 ¥0.05 · 输出 高峰 ¥9.0 / 低谷 ¥4.5（缓存写入官方未计价）
-const PRICE = {
-  peak: { uncachedPerM: 3.0, cacheReadPerM: 0.10, cacheWritePerM: 0, outputPerM: 9.0 },
-  offpeak: { uncachedPerM: 1.5, cacheReadPerM: 0.05, cacheWritePerM: 0, outputPerM: 4.5 }
+// 默认单价（元 / 百万 tokens）：缓存命中输入 空闲 0.02 / 高峰 0.04，
+// 缓存未命中输入 空闲 1 / 高峰 2，输出 空闲 4 / 高峰 8。
+// 高峰时段：01:00-04:00 与 06:00-10:00 UTC；其余为空闲时段。
+// 可在「计费规则」里按模型逐项修改，保存后立即按新价计费。
+const DEFAULT_PRICE = {
+  cacheHit: { off: 0.02, peak: 0.04 },
+  cacheMiss: { off: 1, peak: 2 },
+  output: { off: 4, peak: 8 }
 };
+/** 用户在「计费规则」里改过的单价，按模型键存放（localStorage）。 */
+const PRICING_KEY = "dsh-token-stats/pricing/v1";
+let PRICING = loadPricing();
+function loadPricing() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PRICING_KEY) || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch { return {}; }
+}
+function persistPricing(map) {
+  try { localStorage.setItem(PRICING_KEY, JSON.stringify(map)); return true; } catch { return false; }
+}
+function numOf(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+/** 记录的模型键：provider 与 model 不同名时用 `provider/model`，否则只用 model。 */
+function modelKeyOf(r) {
+  if (!r || !r.model) return "";
+  return r.provider && r.provider !== r.model ? r.provider + "/" + r.model : r.model;
+}
+/** 一个模型的单价（未配置过的模型用默认价）。 */
+function priceOf(key) {
+  const saved = key ? PRICING[key] : null;
+  if (!saved) return DEFAULT_PRICE;
+  return {
+    cacheHit: { off: numOf(saved.cacheHit?.off, DEFAULT_PRICE.cacheHit.off), peak: numOf(saved.cacheHit?.peak, DEFAULT_PRICE.cacheHit.peak) },
+    cacheMiss: { off: numOf(saved.cacheMiss?.off, DEFAULT_PRICE.cacheMiss.off), peak: numOf(saved.cacheMiss?.peak, DEFAULT_PRICE.cacheMiss.peak) },
+    output: { off: numOf(saved.output?.off, DEFAULT_PRICE.output.off), peak: numOf(saved.output?.peak, DEFAULT_PRICE.output.peak) }
+  };
+}
+/** 一条用量的费用拆分（元）：未缓存输入 / 缓存命中输入 / 输出。 */
+function costParts(key, uncached, cacheRead, output, tier) {
+  const p = priceOf(key);
+  const k = tier === "peak" ? "peak" : "off";
+  return {
+    miss: uncached / 1e6 * p.cacheMiss[k],
+    hit: cacheRead / 1e6 * p.cacheHit[k],
+    out: output / 1e6 * p.output[k]
+  };
+}
+function costOf(key, uncached, cacheRead, cacheWrite, output, tier) {
+  const parts = costParts(key, uncached, cacheRead, output, tier);
+  return parts.miss + parts.hit + parts.out;
+}
 function isPeak(t) {
   const h = new Date(t).getUTCHours();
   return (h >= 1 && h < 4) || (h >= 6 && h < 10);
@@ -463,13 +616,6 @@ function isPeak(t) {
 function isPeakLocalHour(localHour) {
   const u = (((localHour + TZ_OFF) % 24) + 24) % 24;
   return (u >= 1 && u < 4) || (u >= 6 && u < 10);
-}
-function costOf(uncached, cacheRead, cacheWrite, output, tier) {
-  const p = PRICE[tier];
-  return uncached / 1e6 * p.uncachedPerM
-    + cacheRead / 1e6 * p.cacheReadPerM
-    + (cacheWrite || 0) / 1e6 * p.cacheWritePerM
-    + output / 1e6 * p.outputPerM;
 }
 function dayKey(t) { const d = new Date(t); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
 function startOfToday() { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
@@ -626,7 +772,7 @@ function buildItems(list, range) {
     it.uncached += r.uncachedInput; it.cacheRead += r.cacheRead;
     it.cacheWrite += r.cacheWrite || 0; it.output += r.output;
     if (isPeak(r.t)) it.peak += r.uncachedInput + r.cacheRead + (r.cacheWrite || 0) + r.output;
-    it.cost += costOf(r.uncachedInput, r.cacheRead, r.cacheWrite || 0, r.output, isPeak(r.t) ? "peak" : "offpeak");
+    it.cost += costOf(modelKeyOf(r), r.uncachedInput, r.cacheRead, r.cacheWrite || 0, r.output, isPeak(r.t) ? "peak" : "offpeak");
   };
   if (period === "today") {
     const items = [];
@@ -661,8 +807,15 @@ function render() {
     if (isPeak(r.t)) { pTu += r.uncachedInput; pTc += r.cacheRead; pTo += r.output; }
   }
   const ti = tu + tc + tw;
-  const peakCost = costOf(pTu, pTc, 0, pTo, "peak");
-  const offCost = costOf(tu - pTu, tc - pTc, tw, to - pTo, "offpeak");
+  // 逐条记录按各自模型的单价计费：不同模型单价可能不同，不能先把 token 合并再计价
+  let peakCost = 0, offCost = 0, costUncached = 0, costCache = 0, costOutput = 0;
+  for (const r of list) {
+    const tier = isPeak(r.t) ? "peak" : "offpeak";
+    const parts = costParts(modelKeyOf(r), r.uncachedInput, r.cacheRead, r.output, tier);
+    costUncached += parts.miss; costCache += parts.hit; costOutput += parts.out;
+    if (tier === "peak") peakCost += parts.miss + parts.hit + parts.out;
+    else offCost += parts.miss + parts.hit + parts.out;
+  }
   const cost = peakCost + offCost;
   countUp($("sTotal"), ti + to, fmt);
   countUp($("sInput"), ti, fmt);
@@ -671,9 +824,6 @@ function render() {
   countUp($("sCache"), tc, fmt);
   countUp($("sOutput"), to, fmt);
   countUp($("sCost"), cost, fmtMoney);
-  const costUncached = costOf(tu, 0, 0, 0, "peak") + costOf(tu - pTu, 0, 0, 0, "offpeak");
-  const costCache = costOf(0, tc, 0, 0, "peak") + costOf(0, tc - pTc, 0, 0, "offpeak");
-  const costOutput = costOf(0, 0, 0, to, "peak") + costOf(0, 0, 0, to - pTo, "offpeak");
   $("sCostDetail").textContent = "高峰 " + fmtMoney(peakCost) + " + 低谷 " + fmtMoney(offCost) + "（未缓存 " + fmtMoney(costUncached) + " + 缓存 " + fmtMoney(costCache) + " + 输出 " + fmtMoney(costOutput) + "）";
   const peakTokens = pTu + pTc + pTo;
   countUp($("sPeak"), peakTokens, fmt);
@@ -689,8 +839,13 @@ function render() {
     if (isPeak(r.t)) { gpu += r.uncachedInput; gpc += r.cacheRead; gpo += r.output; }
   }
   const gi = gu + gc + gw;
-  const gPeak = costOf(gpu, gpc, 0, gpo, "peak");
-  const gOff = costOf(gu - gpu, gc - gpc, gw, go - gpo, "offpeak");
+  let gPeak = 0, gOff = 0;
+  for (const r of DATA.records) {
+    const tier = isPeak(r.t) ? "peak" : "offpeak";
+    const parts = costParts(modelKeyOf(r), r.uncachedInput, r.cacheRead, r.output, tier);
+    if (tier === "peak") gPeak += parts.miss + parts.hit + parts.out;
+    else gOff += parts.miss + parts.hit + parts.out;
+  }
   countUp($("sGrand"), gi + go, (n) => fmt(n) + "（输入 " + fmt(gi) + " / 输出 " + fmt(go) + "）");
   countUp($("sGrandCost"), gPeak + gOff, (n) => fmtMoney(n) + "（高峰 " + fmtMoney(gPeak) + " + 低谷 " + fmtMoney(gOff) + "）");
 
@@ -727,7 +882,7 @@ function renderTable(list) {
     const m = meta.get(s.id);
     const title = m && m.title ? m.title : "(未命名)";
     const input = s.uncached + s.cacheRead + s.cacheWrite;
-    const avColor = ["#2f6fe4", "#7c5cff", "#0e9fc0", "#d97706", "#10b981"][idx % 5];
+    const avColor = ["#2f6fe4", "#7c3aed", "#0e91b0", "#d97706", "#0f9d63"][idx % 5];
     const tr = document.createElement("tr");
     tr.innerHTML =
       '<td><div class="sess-cell"><span class="sess-av" style="background:linear-gradient(135deg,' + avColor + ',' + avColor + 'cc)">' + esc(title.slice(0, 1) || "?") + '</span><div><div class="t-title" title="' + esc(m && m.cwd ? m.cwd : "") + '">' + esc(title) + '</div><div class="t-id">' + esc(s.id) + "</div></div></div></td>" +
@@ -776,8 +931,8 @@ function drawChart(items, progress, W, H, dpr, canvas, ctx) {
   // dashed grid + y labels
   const steps = 5;
   ctx.setLineDash([4, 4]);
-  ctx.strokeStyle = "rgba(148,163,184,.13)";
-  ctx.fillStyle = "#64708f";
+  ctx.strokeStyle = "rgba(15,23,42,.10)";
+  ctx.fillStyle = "#6b7890";
   ctx.textAlign = "right";
   for (let i = 0; i <= steps; i++) {
     const v = (max / steps) * i;
@@ -801,20 +956,20 @@ function drawChart(items, progress, W, H, dpr, canvas, ctx) {
     const r = Math.min(5, barW / 2);
     // input bar (gradient)
     const gIn = ctx.createLinearGradient(0, yIn, 0, mT + plotH);
-    gIn.addColorStop(0, hover ? "#8ab4ff" : "#6fa1ff");
-    gIn.addColorStop(1, hover ? "#4a7de8" : "#3568d4");
+    gIn.addColorStop(0, hover ? "#6f9cf5" : "#5b8cf0");
+    gIn.addColorStop(1, hover ? "#2f63d6" : "#2757c4");
     ctx.fillStyle = gIn;
     if (hIn > 0) roundRect(ctx, x, yIn, barW, Math.max(hIn, 0.6), r, r, 0, 0);
     // output bar (gradient)
     const gOut = ctx.createLinearGradient(0, yOut, 0, yIn);
-    gOut.addColorStop(0, hover ? "#ffd98f" : "#ffd07a");
-    gOut.addColorStop(1, hover ? "#e08a00" : "#c9820a");
+    gOut.addColorStop(0, hover ? "#f5c265" : "#f0b23c");
+    gOut.addColorStop(1, hover ? "#c9820a" : "#bd7a08");
     ctx.fillStyle = gOut;
     if (hOut > 0) roundRect(ctx, x, yOut, barW, Math.max(hOut, 0.6), 0, 0, r, r);
     // peak marker (today view only)
     if (period === "today" && isPeakLocalHour(i) && (hIn + hOut) > 0.6) {
       const top = yOut < yIn ? yOut : yIn;
-      ctx.fillStyle = hover ? "#fcd34d" : "#f59e0b";
+      ctx.fillStyle = hover ? "#eab308" : "#d97706";
       ctx.beginPath();
       ctx.moveTo(x + barW / 2, top - 5);
       ctx.lineTo(x + barW / 2 - 3.4, top - 0.6);
@@ -824,13 +979,13 @@ function drawChart(items, progress, W, H, dpr, canvas, ctx) {
     }
     barRects.push({ x, y: Math.min(yIn, yOut) - 7, w: barW, h: plotH - Math.min(yIn, yOut) + mT + 7 });
     if (i % labelEvery === 0) {
-      ctx.fillStyle = "#64708f";
+      ctx.fillStyle = "#6b7890";
       ctx.textAlign = "center";
       ctx.fillText(it.label, mL + i * slot + slot / 2, H - mB + 14);
     }
   }
   // baseline
-  ctx.strokeStyle = "rgba(148,163,184,.3)";
+  ctx.strokeStyle = "rgba(15,23,42,.18)";
   ctx.beginPath(); ctx.moveTo(mL, mT + plotH); ctx.lineTo(W - mR, mT + plotH); ctx.stroke();
 }
 function roundRect(ctx, x, y, w, h, rTL, rTR, rBR, rBL) {
@@ -854,9 +1009,9 @@ function chartCtx() {
   const canvas = $("chart");
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  const W = Math.max(rect.width, 200), H = 330;
-  canvas.width = W * dpr; canvas.height = H * dpr;
-  canvas.style.height = H + "px";
+  // 高度由 CSS 决定（弹窗模式用 clamp 自适应），这里只同步位图尺寸。
+  const W = Math.max(rect.width, 200), H = Math.max(160, Math.round(rect.height) || 330);
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   return { canvas, ctx, W, H, dpr };
@@ -891,15 +1046,15 @@ function showTooltip(e, item) {
     '<div class="tt-row sub"><span class="c">' + label + '</span><span class="c b">' + val + "</span></div>";
   tt.innerHTML =
     '<div class="tt-title">' + (period === "today" ? "今天 " + item.label : item.label) + "</div>" +
-    row("#4f8cff", "合计（输入+输出）", fmt(total)) +
+    row("#2563eb", "合计（输入+输出）", fmt(total)) +
     sub("高峰时段", fmt(item.peak)) +
     sub("低谷时段", fmt(total - item.peak)) +
-    row("#4f8cff", "输入（含缓存）", fmt(input)) +
+    row("#2563eb", "输入（含缓存）", fmt(input)) +
     sub("未缓存", fmt(item.uncached)) +
     sub("缓存读取", fmt(item.cacheRead)) +
     (item.cacheWrite > 0 ? sub("缓存写入", fmt(item.cacheWrite)) : "") +
-    row("#7c5cff", "输出", fmt(item.output)) +
-    row("#34d399", "预估费用（分高峰/低谷）", fmtMoney(item.cost));
+    row("#7c3aed", "输出", fmt(item.output)) +
+    row("#0f9d63", "预估费用（分高峰/低谷）", fmtMoney(item.cost));
   tt.style.display = "block";
   const tw = tt.offsetWidth, th = tt.offsetHeight;
   let x = e.clientX + 14, y = e.clientY + 14;
@@ -954,8 +1109,126 @@ function bindControls() {
   });
 }
 
+/* ---------- 计费规则弹窗（按模型编辑单价，保存到 localStorage） ---------- */
+const PRICING_COLUMNS = [
+  { group: "cacheHit", tier: "off" },
+  { group: "cacheHit", tier: "peak" },
+  { group: "cacheMiss", tier: "off" },
+  { group: "cacheMiss", tier: "peak" },
+  { group: "output", tier: "off" },
+  { group: "output", tier: "peak" }
+];
+
+/** 从宿主给的目录里取「供应商显示名 / 模型显示名」，与 dsh 设置 → 模型页显示的一致；取不到就回落到原始 id。 */
+function catalogNames(providerId, modelId) {
+  const catalog = Array.isArray(DATA && DATA.catalog) ? DATA.catalog : [];
+  const provider = providerId ? catalog.find((p) => p.id === providerId) ?? null : null;
+  let model = provider && modelId ? (provider.models || []).find((m) => m.id === modelId) ?? null : null;
+  if (!model && modelId) {
+    for (const entry of catalog) {
+      const hit = (entry.models || []).find((m) => m.id === modelId);
+      if (hit) { model = hit; break; }
+    }
+  }
+  return {
+    provider: provider?.name || providerId || "",
+    model: model?.name || modelId || ""
+  };
+}
+
+/** 本统计周期内用过的模型（按 token 量倒序），再并入已保存过单价但本周期未出现的模型。 */
+function pricingRows() {
+  const { list } = filteredRecords();
+  const used = new Map();
+  for (const r of list) {
+    const key = modelKeyOf(r);
+    const row = used.get(key) ?? { key, providerId: r.provider || null, modelId: r.model || null, tokens: 0, used: true };
+    row.tokens += r.uncachedInput + r.cacheRead + (r.cacheWrite || 0) + r.output;
+    used.set(key, row);
+  }
+  const rows = [...used.values()].sort((a, b) => b.tokens - a.tokens);
+  for (const key of Object.keys(PRICING)) {
+    if (rows.some((row) => row.key === key)) continue;
+    const saved = PRICING[key] || {};
+    rows.push({ key, providerId: saved.providerId ?? null, modelId: saved.modelId ?? key, tokens: 0, used: false });
+  }
+  return rows;
+}
+
+function renderPricingTable() {
+  const rows = pricingRows();
+  $("pricingBody").innerHTML = rows.map((row) => {
+    const p = priceOf(row.key);
+    const names = catalogNames(row.providerId, row.modelId);
+    const detail = row.used ? "本周期 " + fmt(row.tokens) + " tokens" : "本周期未使用";
+    const raw = row.key && row.key !== names.model && row.key !== names.provider + "/" + names.model ? " · " + row.key : "";
+    const cells = PRICING_COLUMNS.map((col) =>
+      '<td><input type="number" min="0" step="0.01" data-group="' + col.group + '" data-tier="' + col.tier + '" value="' + p[col.group][col.tier] + '"></td>').join("");
+    return '<tr class="' + (row.used ? "" : "unused") + '" data-key="' + esc(row.key) + '" data-provider="' + esc(row.providerId || "") + '" data-model="' + esc(row.modelId || "") + '">' +
+      '<td class="model">' + esc(names.provider || "—") + "</td>" +
+      '<td class="model">' + esc(names.model || "（未标注模型）") + '<span class="sub">' + esc(detail + raw) + "</span></td>" +
+      cells + "</tr>";
+  }).join("") || '<tr><td class="model">（本周期没有用量记录）</td><td class="model"></td><td colspan="6"></td></tr>';
+  const catalogReady = Array.isArray(DATA && DATA.catalog) && DATA.catalog.length > 0;
+  $("pricingScope").textContent = "当前周期：" + currentRange().label + (catalogReady ? "" : " · 显示名不可用（宿主未提供模型目录）");
+  const hint = $("pricingHint");
+  hint.classList.toggle("warn", !catalogReady);
+  hint.textContent = catalogReady ? "" : "供应商 / 模型暂时只显示原始 id：宿主插件尚未加载模型目录，重启 dsh 后即显示设置里的名称";
+}
+
+function openPricing() {
+  renderPricingTable();
+  $("pricingModal").classList.add("open");
+}
+function closePricing() { $("pricingModal").classList.remove("open"); }
+
+function savePricingFromTable() {
+  const next = { ...PRICING };
+  let count = 0;
+  for (const tr of $("pricingBody").querySelectorAll("tr")) {
+    const key = tr.dataset.key;
+    if (!key) continue; // 未标注模型的用量走默认价，不写规则
+    const entry = {
+      providerId: tr.dataset.provider || null,
+      modelId: tr.dataset.model || null,
+      cacheHit: {}, cacheMiss: {}, output: {}
+    };
+    for (const input of tr.querySelectorAll("input[type=number]")) {
+      const group = input.dataset.group, tier = input.dataset.tier;
+      entry[group][tier] = numOf(input.value, DEFAULT_PRICE[group][tier]);
+    }
+    next[key] = entry;
+    count += 1;
+  }
+  const saved = persistPricing(next);
+  PRICING = next;
+  $("pricingHint").textContent = saved ? "已保存 " + count + " 个模型的单价" : "保存失败：浏览器禁用了本地存储";
+  if (saved) {
+    render(); // 「当前区间 · 预估金额」等立即按新规则重算
+    setTimeout(closePricing, 450);
+  }
+}
+
+function resetPricingTable() {
+  for (const input of $("pricingBody").querySelectorAll("input[type=number]")) {
+    input.value = DEFAULT_PRICE[input.dataset.group][input.dataset.tier];
+  }
+  $("pricingHint").textContent = "已恢复默认价，点「保存」生效";
+}
+
+function bindPricing() {
+  $("pricingBtn").addEventListener("click", openPricing);
+  $("pricingCloseBtn").addEventListener("click", closePricing);
+  $("pricingCancelBtn").addEventListener("click", closePricing);
+  $("pricingSaveBtn").addEventListener("click", savePricingFromTable);
+  $("pricingResetBtn").addEventListener("click", resetPricingTable);
+  $("pricingModal").addEventListener("mousedown", (e) => { if (e.target === $("pricingModal")) closePricing(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("pricingModal").classList.contains("open")) closePricing(); });
+}
+
 bindChart();
 bindControls();
+bindPricing();
 // data priority: injected by the exe (window.__DSH_DATA__) > fetch > file picker
 if (typeof window.__DSH_DATA__ !== "undefined" && window.__DSH_DATA__) {
   DATA = window.__DSH_DATA__;
