@@ -49,26 +49,12 @@ for (const file of ["lib/client.js", "lib/index.js", "cordis.patch.yml", "instal
   writeFileSync(path, readFileSync(path, "utf8").split(SOURCE_NAME).join(PUBLISH_NAME));
 }
 
-let readme = readFileSync(join(root, "README.md"), "utf8").split(SOURCE_NAME).join(PUBLISH_NAME);
-readme = readme.replace(/> 本机已装到桌面端 profile[^\n]*\n> 清单备份在 profile 下的[^\n]*\n\s*\n/u, "");
-const installSection = [
-  "# " + PUBLISH_NAME + " — Harness 整体 Token 用量看板插件",
-  "",
-  "`token-stats-rollup.*.json`；`dsh plugin` 安装，桌面端与 Web 端同一份包。",
-  "",
-  "## 安装（npm，推荐）",
-  "",
-  "```powershell",
-  `dsh plugin --profile web add ${PUBLISH_NAME}       # Web 端`,
-  `dsh plugin --profile desktop add ${PUBLISH_NAME}   # 桌面端（也可在 App 的 Plugins 页里填包名）`,
-  "```",
-  "",
-  "装完重启一次对应 surface（桌面端重启 App，Web 端重启服务）——bundle 选择在 profile 加载时读取。",
-  "客户端半（侧边栏「Token 用量」入口）随模块图热更新；没出现就刷新页面。",
-  "",
-  "下面是从源码目录安装（含离线场景）的说明。"
-].join("\n");
-readme = readme.replace(new RegExp("^# " + PUBLISH_NAME.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&") + " — Harness 整体 Token 用量看板插件", "u"), installSection);
+// README travels as-is (it already documents the npm install/upgrade/uninstall commands);
+// only the package identity is rewritten to the publish name and the repository-only
+// "dev-only" note is stripped.
+const readme = readFileSync(join(root, "README.md"), "utf8")
+  .replace(/<!-- dev-only -->[\s\S]*?<!-- \/dev-only -->\n\n?/u, "")
+  .split(SOURCE_NAME).join(PUBLISH_NAME);
 writeFileSync(join(dist, "README.md"), readme);
 
 const client = readFileSync(join(dist, "lib/client.js"), "utf8");
@@ -101,7 +87,12 @@ const checks = [
   ["host attributes each record to its model", shippedHost.includes("function modelOfEvent(")],
   ["host exposes the provider/model catalog", shippedHost.includes("catalog: catalogCache.items")],
   ["description keeps its label", manifest.description.includes("Token 用量")],
-  ["manifest is not private", manifest.private === undefined]
+  ["manifest is not private", manifest.private === undefined],
+  ["readme documents the npm install command", readme.includes(`add ${PUBLISH_NAME}`)],
+  ["readme documents the npm uninstall command", readme.includes(`remove ${PUBLISH_NAME}`)],
+  ["readme names the published package", readme.includes(PUBLISH_NAME)],
+  ["readme drops repository-only notes", !readme.includes("dev-only") && !readme.includes(SOURCE_NAME)],
+  ["readme covers install/upgrade/uninstall", ["## 安装", "## 升级", "## 卸载"].every((heading) => new RegExp(`^${heading}$`, "mu").test(readme))]
 ];
 const failed = checks.filter(([, ok]) => !ok);
 
