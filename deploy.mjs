@@ -1,6 +1,6 @@
 // Deploy this development tree into a profile's installed copy of the published package.
 //
-// Why a script: the dev tree keeps the `@deepseek-ai/dsh-token-stats` identity it was
+// Why a script: the dev tree keeps the `@shallbay/dsh-token-stats` identity it was
 // linked with, while the installed package is `@shallbay/dsh-token-stats`. Copying files
 // by hand ships the dev name inside the client bundle, and client-modules then refuses the
 // row ("bundle executed twice" / "entry did not activate") because a bundle must register
@@ -13,7 +13,7 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
-const DEV_NAME = "@deepseek-ai/dsh-token-stats";
+const DEV_NAME = "@shallbay/dsh-token-stats";
 const root = import.meta.dirname;
 const args = process.argv.slice(2);
 const argOf = (flag, fallback) => {

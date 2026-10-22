@@ -128,7 +128,7 @@ dsh plugin --profile web remove @shallbay/dsh-token-stats
 ```
 
 脚本是幂等的，不需要 pnpm：它在 profile 下建 `.dsh-token-stats-source` 链接、在
-`node_modules` 下建同名链接、把 `"@deepseek-ai/dsh-token-stats": "link:.dsh-token-stats-source"`
+`node_modules` 下建同名链接、把 `"@shallbay/dsh-token-stats": "link:.dsh-token-stats-source"`
 写进 `dependencies`，并把包名追加进 `dsh.profile.bundles`。
 
 > 不要手工往 `<profile>\cordis.patch.yml` 追加 `- insert:` 行（桌面端改插件时该文件会被整体重写）。

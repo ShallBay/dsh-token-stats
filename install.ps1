@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-  @deepseek-ai/dsh-token-stats 一键安装脚本（Harness 整体 Token 用量看板插件）
+  @shallbay/dsh-token-stats 一键安装脚本（Harness 整体 Token 用量看板插件）
 
 .DESCRIPTION
   把插件装进某个 dsh profile。安装方式由 profile 自己决定：
@@ -9,7 +9,7 @@
      `dsh.profile.bundles`）** —— 与 App 里「Plugins」页安装第三方插件的方式一致：
        1) 在 profile 下建一个指向本插件源码的链接目录 .dsh-token-stats-source
        2) 在 profile 的 node_modules 下建同名链接
-       3) 把 `"@deepseek-ai/dsh-token-stats": "link:.dsh-token-stats-source"` 写进 dependencies
+       3) 把 `"@shallbay/dsh-token-stats": "link:.dsh-token-stats-source"` 写进 dependencies
        4) 把包名追加进 dsh.profile.bundles
      插件的加载行由**本包自带的 cordis.patch.yml**（package.json 的 dsh.bundle.patch）插入，
      不再依赖手改 profile 的 cordis.patch.yml。

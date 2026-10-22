@@ -1,7 +1,7 @@
 # 发布说明（维护者）
 
-发布物：`@shallbay/dsh-token-stats`（源自本目录的开发副本 `@deepseek-ai/dsh-token-stats`，
-构建时由 `pack.mjs` 改名、去掉 `private` 并补上 `keywords` / `publishConfig`）。
+发布物：`@shallbay/dsh-token-stats`（自 1.2.2 起本目录的开发副本与发布包同名，
+构建时由 `pack.mjs` 去掉 `private` 并补上 `keywords` / `publishConfig`）。
 
 ## 一次性准备：用户级 .npmrc
 

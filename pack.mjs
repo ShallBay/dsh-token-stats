@@ -1,8 +1,8 @@
 // Build the publish-ready npm package under dist/.
 //
-// The development copy in this folder keeps the `@deepseek-ai/...` identity it was
-// linked into a local profile with; the published package is `@shallbay/dsh-token-stats`
-// and every shipped reference to the package name is rewritten here.
+// The development copy in this folder and the published package share one identity
+// (`@shallbay/dsh-token-stats`); the rewrites below are now no-ops kept as a guard, so
+// shipped identifiers always follow the published name if the two ever diverge again.
 //
 //   node pack.mjs            # version from package.json
 //   node pack.mjs 1.2.0      # explicit version
@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** Identity of this development copy (matches the profile link + bundle row). */
-const SOURCE_NAME = "@deepseek-ai/dsh-token-stats";
+const SOURCE_NAME = "@shallbay/dsh-token-stats";
 /** Identity published to npm. */
 const PUBLISH_NAME = "@shallbay/dsh-token-stats";
 
@@ -91,7 +91,7 @@ const checks = [
   ["readme documents the npm install command", readme.includes(`add ${PUBLISH_NAME}`)],
   ["readme documents the npm uninstall command", readme.includes(`remove ${PUBLISH_NAME}`)],
   ["readme names the published package", readme.includes(PUBLISH_NAME)],
-  ["readme drops repository-only notes", !readme.includes("dev-only") && !readme.includes(SOURCE_NAME)],
+  ["readme drops repository-only notes", !readme.includes("dev-only")],
   ["readme covers install/upgrade/uninstall", ["## 安装", "## 升级", "## 卸载"].every((heading) => new RegExp(`^${heading}$`, "mu").test(readme))]
 ];
 const failed = checks.filter(([, ok]) => !ok);
